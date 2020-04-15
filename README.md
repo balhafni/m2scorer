@@ -25,16 +25,17 @@ Linguistics: Human Language Technologies (NAACL 2012).
 2. Pre-requisites 
 3. Using the scorer   
   3.1 System output format     
-  3.2 Scorer's gold standard format   
-4. Converting the CoNLL-2014 data format
-5. Revisions  
+  3.2 Scorer's gold standard format
+4. Using the edits creator
+5. Converting the CoNLL-2014 data format
+6. Revisions  
    5.1 Alternative edits     
    5.2 F-beta measure   
    5.3 Handling of insertion edits   
    5.4 Bug fix for scoring against multiple sets of gold edits, and dealing with sequences of insertion/deletion edits
 
 
-### Quickstart
+### 1. Quickstart
 
 ```
 ./m2scorer [-v] SYSTEM SOURCE_GOLD 
@@ -43,14 +44,14 @@ SYSTEM = the system output in sentence-per-line plain text.
 SOURCE_GOLD = the source sentences with gold edits.
 
 
-### Pre-requisites
+### 2. Pre-requisites
 The following dependencies have to be installed to use the M^2 scorer.
 
 * Python (>= 2.6.4, < 3.0, older versions might work but are not tested)
 * nltk (http://www.nltk.org, needed for sentence splitting) 
 
 
-### Using the scorer
+### 3. Using the scorer
 ```
 Usage: m2scorer [OPTIONS] SYSTEM SOURCE_GOLD
 ```
@@ -66,7 +67,7 @@ OPTIONS
   --beta                      -  Set the ratio of recall importance against precision. Default = 0.5.
 
 ```
-#### 2.1 System output format
+#### 3.1 System output format
 The sentences should be in tokenized plain text, sentence-per-line
 format.
 
@@ -88,7 +89,7 @@ A cat sat on the mat .
 The Dog .
 
 
-#### Scorer's gold standard format
+#### 3.2 Scorer's gold standard format
 SOURCE_GOLD = source sentences (i.e. input to the error correction
 system) and the gold annotation in TOKEN offsets (starting from zero). 
 
@@ -170,8 +171,40 @@ and one missing edit. Therefore precision is 4/5 = 0.8. Similarly for
 recall. In the above example, the beta value for the F-measure is 0.5
 (the default value).
 
+### 4. Using the edits creator
+To use the m2scorer, you need to have a set of gold edit annoations for each sentence. Ideally, these annotations should be created manually by human annotators. However, the `edit_creator.py` script can also create edit annotations. To run the script, you will need a set of source sentences and a set of target sentences. The script will then return the source sentences, one sentence per line, along with the sentences edits annotations. For examples, let's say we have the following sentences: <br/>
+```
+src: The cat sat at mat .
+trg: A cat sat on the mat . 
+```
+The script will return the following annotations: <br/>
+```
+A 0 1|||UNK|||A|||REQUIRED|||-NONE-|||0
+A 3 4|||UNK|||on the|||REQUIRED|||-NONE-|||0
+```
+If no edits exist between the source and the target, the script will return:
+```
+A -1 -1|||noop|||-NONE-|||-NONE-|||-NONE-|||0
+```
+It is important to note that the current `edit_creator.py` has some [limitations](https://github.com/nusnlp/m2scorer/issues/10#issuecomment-424559766):
+* It cannot handle multiple target annotations. Therefore, all the annotations ids are 0.
+* It doesn't create annotations when the src and trg sentences are identical. However, this is fixed in this current fork.
+* The script might create suboptimal annotations.
+```
+python edit_creator.py [args] src trg
 
-###Converting the CoNLL-2014 data format
+src: the tokenized source sentences. One sentence per line
+trg: the tokenized target sentences. One sentence per line
+
+args:
+-v    --verbose                     -  print verbose output
+--very_verbose                      -  print lots of verbose output
+--max_unchanged_words N             -  Maximum unchanged words when extraction edit. Default 0.
+--ignore_whitespace_casing          -  Ignore edits that only affect whitespace and caseing. Default no.
+--output                            -  The output file. Otherwise, it prints to standard output 
+```
+
+### 5. Converting the CoNLL-2014 data format
 The data format used in the M^2 scorer differs from the format used in
 the CoNLL-2014 shared task (http://www.comp.nus.edu.sg/~nlp/conll14st.html)
 in two aspects:

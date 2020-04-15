@@ -107,6 +107,11 @@ for candidate, source in izip(system_read, source_read):
             # At the moment, the annotation ID is always 0
             # print "A {0} {1}|||{2}|||{3}|||{4}".format(ed[0], ed[1], ed[2], ed[3], 0)
             print >> write_output, "A {0} {1}|||{2}|||{3}|||{4}|||{5}|||{6}".format(ed[0], ed[1], "UNK", ed[3], 'REQUIRED', '-NONE-', 0)
+
+    # If there's no edits, print: A -1 -1|||noop|||-NONE-|||-NONE-|||-NONE-|||0
+    if not editSeq:
+        print >> write_output, "A {0} {1}|||{2}|||{3}|||{4}|||{5}|||{6}".format(-1, -1, "noop","-NONE-", "-NONE-", "-NONE-", 0)
+
     print >> write_output,""
 system_read.close()
 source_read.close()
